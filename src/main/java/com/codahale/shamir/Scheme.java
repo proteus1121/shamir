@@ -16,11 +16,14 @@
 package com.codahale.shamir;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
+import javafx.util.Pair;
 
 /**
  * An implementation of Shamir's Secret Sharing over {@code GF(256)} to securely split secrets into
@@ -81,6 +84,28 @@ public class Scheme {
       parts.put(i + 1, values[i]);
     }
     return Collections.unmodifiableMap(parts);
+  }
+
+  public Pair<Map<Integer, byte[]>, List<byte[]>> splitByFeldman(byte[] secret) {
+    // generate part values
+    final byte[][] values = new byte[n][secret.length];
+    final List<byte[]> checkSum = new ArrayList<>();
+    for (int i = 0; i < secret.length; i++) {
+      // for each byte, generate a random polynomial, p
+      final byte[] p = GF256.generate(random, k - 1, secret[i]);
+      checkSum.add(p);
+      for (int x = 1; x <= n; x++) {
+        // each part's byte is p(partId)
+        values[x - 1][i] = GF256.eval(p, (byte) x);
+      }
+    }
+
+    // return as a set of objects
+    final Map<Integer, byte[]> parts = new HashMap<>(n());
+    for (int i = 0; i < values.length; i++) {
+      parts.put(i + 1, values[i]);
+    }
+    return new Pair<>(Collections.unmodifiableMap(parts), checkSum);
   }
 
   /**
