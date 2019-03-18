@@ -15,6 +15,7 @@
  */
 package com.codahale.shamir;
 
+import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,14 +87,13 @@ public class Scheme {
     return Collections.unmodifiableMap(parts);
   }
 
-  public Pair<Map<Integer, byte[]>, List<byte[]>> splitByFeldman(byte[] secret) {
+  public Pair<Map<Integer, byte[]>, List<Double>> splitByFeldman(byte[] secret, FeldmanVSS f) {
     // generate part values
     final byte[][] values = new byte[n][secret.length];
-    final List<byte[]> checkSum = new ArrayList<>();
+    final List<Double> checkSum = new ArrayList<>();
     for (int i = 0; i < secret.length; i++) {
       // for each byte, generate a random polynomial, p
       final byte[] p = GF256.generate(random, k - 1, secret[i]);
-      checkSum.add(p);
       for (int x = 1; x <= n; x++) {
         // each part's byte is p(partId)
         values[x - 1][i] = GF256.eval(p, (byte) x);
@@ -104,6 +104,10 @@ public class Scheme {
     final Map<Integer, byte[]> parts = new HashMap<>(n());
     for (int i = 0; i < values.length; i++) {
       parts.put(i + 1, values[i]);
+      BigInteger bigInteger = BigInteger.valueOf(f.g);
+      BigInteger z = bigInteger.modPow(new BigInteger(values[i]), BigInteger.valueOf(f.p));
+      BigInteger pow = bigInteger.pow(z.intValue());
+      checkSum.add(pow.doubleValue());
     }
     return new Pair<>(Collections.unmodifiableMap(parts), checkSum);
   }

@@ -30,17 +30,17 @@ public class TestFeldman {
 
   @Test
   public void testFeldman() {
+    FeldmanVSS F = new FeldmanVSS(11, 3);
     final Scheme scheme = new Scheme(new SecureRandom(), 5, 3);
     int msg = 2560;
     final byte[] secret = ByteUtils.intToBytes(msg);
-    Pair<Map<Integer, byte[]>, List<byte[]>> integerPairMap = scheme.splitByFeldman(secret);
+    Pair<Map<Integer, byte[]>, List<Double>> integerPairMap = scheme.splitByFeldman(secret, F);
     Map<Integer, byte[]> collect =
             integerPairMap
                 .getKey();
 
-    FeldmanVSS F = new FeldmanVSS(11, 3);
     F.setCommitments(msg, integerPairMap.getValue());
-    String result = F.verifyShare(0, ByteUtils.intToBytes(4));
+    String result = F.verifyShare(1, collect.get(1));
     System.out.println("hasil verifikasi: " + result);
   }
 }

@@ -31,14 +31,13 @@ public class FeldmanVSS {
     this.commitments = new ArrayList<>();
   }
 
-  public void setCommitments(int M, List<byte[]> polCoeff) {
+  public void setCommitments(int M, List<Double> polCoeff) {
     BigInteger gB = new BigInteger(String.valueOf(g));
     BigInteger mB = new BigInteger(String.valueOf(M));
-    this.commitments.add(pow(gB, mB));
+//    this.commitments.add(pow(gB, mB));
     for (int i = 0; i < polCoeff.size(); i++) {
-      byte[] bytes = polCoeff.get(i);
-      BigInteger a = new BigInteger(bytes);
-      this.commitments.add(pow(gB, a));
+      BigInteger bytes = BigInteger.valueOf(polCoeff.get(i).longValue());
+      this.commitments.add(bytes);
     }
   }
 
@@ -66,8 +65,9 @@ public class FeldmanVSS {
     BigInteger commitmentsRes = new BigInteger("1");
     for (int i = 0; i < this.commitments.size(); i++) {
 //      commitmentsRes *= ((long) Math.pow(commitments.get(i), Math.pow(id, i)) % p);
-      BigInteger bigInteger = commitments.get(i).modPow(pow(idB, new BigInteger(String.valueOf(i))), pB);
-      commitmentsRes = commitmentsRes.multiply(bigInteger);
+      commitmentsRes = commitmentsRes .multiply(gB.pow(commitments.get(i).intValue()).pow(Double.valueOf(Math.pow(id, i)).intValue()));
+//      BigInteger bigInteger = commitments.get(i).modPow(pow(idB, new BigInteger(String.valueOf(i))), pB);
+//      commitmentsRes = commitmentsRes.multiply(bigInteger);
     }
     commitmentsRes = commitmentsRes.mod(pB);
     //        System.out.println("shareRes="+shareRes);
